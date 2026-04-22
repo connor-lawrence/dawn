@@ -1,7 +1,7 @@
 import numpy as np                                                                                                                                                          #
 class Dawn3:
     def __init__(self, net, hidden_type, output_type): ##### Initialize Dawn3 #####
-        np.random.seed(1) # Set random seed
+        np.random.seed(int.from_bytes("Joelle".encode(), "little") % (2**32)) # Set random seed
         self.net_dimensions = net; self.layer_count = len(net) - 1 # Bring in network dimensions and saves number of layers
         self.weights = []; self.biases = [] # Make lists for weights and biases
         self.activated_layer_outputs = []; self.raw_layer_outputs = [] # Make lists for raw and activated layer outputs for training
@@ -10,7 +10,7 @@ class Dawn3:
         self.hidden_derivative = {"sigmoid": self.sigmoid_der, "tanh": self.tanh_der, "relu": self.relu_der}.get(hidden_type, self.sigmoid_der) # Hidden layer derivative
         self.output_function = {"sigmoid": self.sigmoid, "tanh": self.tanh, "relu": self.relu}.get(output_type, self.sigmoid) # Output layer activation function
         self.output_derivative = {"sigmoid": self.sigmoid_der, "tanh": self.tanh_der, "relu": self.relu_der}.get(output_type, self.sigmoid_der) # Output layer derivative
-        self.layer_outputs = {"sigmoid": self.activated_layer_outputs, "tanh": self.activated_layer_outputs, "relu": self.raw_layer_outputs}.get(hidden_type) # Layer outputs #CHANGE: hidden
+        self.layer_outputs = {"sigmoid": self.activated_layer_outputs, "tanh": self.activated_layer_outputs, "relu": self.raw_layer_outputs}.get(hidden_type) # Layer outputs
     def init_parameters(self, nu="n"): ##### Initialize Parameters #####
         self.weights = []; self.biases = [] # Bring in lists for weights and biases
         for i in range(self.layer_count): # For each layer:
@@ -42,12 +42,12 @@ class Dawn3:
         interval = max(1, epochs // logs) if logs != 0 else None; epoch_digits = len(str(epochs)); current_lr = lr # Set log interval and starting learn rate
         for epoch in range(epochs): # For each epoch:
             self.think(inputs) # Forward pass
-            if method == "bp": deltas[-1] = (self.activated_layer_outputs[-1] - signals) * self.output_derivative(self.activated_layer_outputs[-1]) # Backprop output layer deltas #CHANGE: activated
-            elif method == "rl": deltas[-1] = (signals - self.activated_layer_outputs[-1]) * self.output_derivative(self.activated_layer_outputs[-1]) # Reinforcement output layer deltas #CHANGE: activated
+            if method == "bp": deltas[-1] = (self.activated_layer_outputs[-1] - signals) * self.output_derivative(self.activated_layer_outputs[-1]) # BP output layer deltas
+            elif method == "rl": deltas[-1] = (signals - self.activated_layer_outputs[-1]) * self.output_derivative(self.activated_layer_outputs[-1]) # RL output layer dltas
             for i in reversed(range(self.layer_count - 1)): deltas[i] = (self.weights[i+1].T @ deltas[i+1]) * self.hidden_derivative(self.layer_outputs[i+1]) # Hdn lyr dltas
             for i in range(self.layer_count): # For each layer:
                 previous_output = self.activated_layer_outputs[i] # Set the previous output correctly
-                self.weights[i] -= current_lr * (deltas[i] @ previous_output.T); self.biases[i] -= current_lr * np.sum(deltas[i], axis=1, keepdims=True) # Update wts and bs #CHANGE: sum
+                self.weights[i] -= current_lr * (deltas[i] @ previous_output.T); self.biases[i] -= current_lr * np.sum(deltas[i], axis=1, keepdims=True) # Update wts and bss
             current_lr *= decay # Decay learn rate
             if logs != 0 and epoch % interval == 0: # If a log is expected:
                 mse = np.mean((self.activated_layer_outputs[-1] - signals) ** 2) # Compute MSE
@@ -60,7 +60,7 @@ class Dawn3:
     def relu(self, x): return np.maximum(0.01 * x, x) # ReLU
     def relu_der(self, x): return (x > 0).astype(float) + 0.01 * (x <= 0) # ReLU derivative
 
-##########################################################################################################################################################################
+#############################################################################################################################################################################
 
 class Dawn2: # Broken somehow...
     # Initialize Dawn2
@@ -137,7 +137,7 @@ class Dawn2: # Broken somehow...
     def relu(self, x): return np.maximum(0, x) # ReLU
     def relu_der(self, x): return (x > 0).astype(float) # ReLu derivative
 
-##########################################################################################################################################################################
+#############################################################################################################################################################################
 
 class dawn:
 
@@ -306,7 +306,7 @@ class dawn:
     def relu_der(self, x):
         return (x > 0).astype(float)
 
-##########################################################################################################################################################################
+#############################################################################################################################################################################
 
 class byte:
 
@@ -355,7 +355,7 @@ class byte:
         print("[byte] Byte Training Complete!")
         print("")
 
-##########################################################################################################################################################################
+#############################################################################################################################################################################
 
 class node2: # Slightly edited for class integration, functionalty identical
 
@@ -400,7 +400,7 @@ class node2: # Slightly edited for class integration, functionalty identical
         final_output = layers[-1]
         return final_output
 
-##########################################################################################################################################################################
+#############################################################################################################################################################################
 
 class node1: # Slightly edited for class integration, functionalty identical
 
@@ -445,7 +445,7 @@ class node1: # Slightly edited for class integration, functionalty identical
         output = layer[-1][0]
         return output
 
-##########################################################################################################################################################################
+#############################################################################################################################################################################
 
 class betternn: # Slightly edited for class integration, functionalty identical
 
@@ -486,7 +486,7 @@ class betternn: # Slightly edited for class integration, functionalty identical
 
         return final_output
 
-##########################################################################################################################################################################
+#############################################################################################################################################################################
 
 class nntest: # Slightly edited for class integration, functionalty identical
 
