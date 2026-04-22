@@ -1,33 +1,27 @@
 import numpy as np
 
-# Setup
-
-layer_sizes = [2,3,2,1]
-learn_rate = 0.05
-epochs = 100000
-
 x = np.array([[0,0],[0,1],[1,0],[1,1]])
 y = np.array([[0],[1],[1],[0]])
 
 def sigmoid(x):
-  x = np.clip(x, -500, 500)
-  return 1 / (1 + np.exp(-x))
+    return 1 / (1 + np.exp(-x))
 
 def sigmoid_der(x):
-  return x * (1 - x)
+    return x * (1 - x)
+
+layer_sizes = [2,3,2,1]
+learn_rate = 0.1
+epochs = 500000
 
 np.random.seed(1)
 weights = []
 
-# Training
-
 print("")
-print("[neuralnets/node2] Beginning training...")
+print("[betternn] Beginning training...")
 print("")
 
 for i in range(len(layer_sizes) - 1):
-    limit = np.sqrt(6 / (layer_sizes[i] + layer_sizes[i+1]))
-    w = np.random.uniform(-limit, limit, (layer_sizes[i], layer_sizes[i+1]))
+    w = 2 * np.random.random((layer_sizes[i], layer_sizes[i+1])) - 1
     weights.append(w)
 
 for _ in range(epochs):
@@ -40,22 +34,20 @@ for _ in range(epochs):
         deltas.insert(0, delta)
     for i in range(len(weights)):
         weights[i] += layers[i].T.dot(deltas[i]) * learn_rate
-    if _ % (epochs // 10) == 0:
+    if _ % (epochs // 50) == 0:
         mse = np.mean((y -  layers[-1])**2)
-        print(f"[neuralnets/node2] Epoch {_}, MSE: {mse:.6f}")
-
-# Finalizing
+        print(f"[betternn] Epoch {_}, MSE: {mse:.6f}")
 
 final_output = layers[-1]
 predicted_bits = (final_output > 0.5).astype(int)
 
 print("")
-print("[neuralnets/node2] Predictions after training:")
+print("[betternn] Predictions after training:")
 print(final_output)
 print("")
-print("[neuralnets/node2] Simplified Predictions:")
+print("[betternn] Simplified Predictions:")
 print(predicted_bits)
 print("")
-print("[neuralnets/node2] Correct Bits:")
+print("[betternn] Correct Bits:")
 print(y)
 print("")

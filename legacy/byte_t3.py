@@ -71,7 +71,7 @@ def print_board(board):
 def human_move(board):
     move = -1
     while move not in range(9) or board[move] != 0:
-        move = int(input(f"[neuralnets/byte_t3] Your Turn! (0-8): "))
+        move = int(input(f"[byte_t3] Your Turn! (0-8): "))
     return move
 
 def byte_move(board):
@@ -97,11 +97,11 @@ while True:
         print_board(board)
         print("")
         if winner == 1:
-            print("[neuralnets/byte_t3] You Win! (^C To Exit Game)")
+            print("[byte_t3] You Win! (^C To Exit Game)")
         elif winner == -1:
-            print("[neuralnets/byte_t3] Byte Wins! (^C To Exit Game)")
+            print("[byte_t3] Byte Wins! (^C To Exit Game)")
         else:
-            print("[neuralnets/byte_t3] Draw! (^C To Exit Game)")
+            print("[byte_t3] Draw! (^C To Exit Game)")
         board = [0,0,0,0,0,0,0,0,0]
         current_player = -1
     else:

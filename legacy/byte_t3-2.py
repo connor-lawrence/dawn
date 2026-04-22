@@ -1,16 +1,13 @@
-from neuralnets import dawn
+from neuralnets import byte
 import numpy as np
 
 
-# Current Best BYTE: [9,56,56,18,9],      sigmoid,   0.012 *= 1      15000: 0.002533
-# Current Best DAWN: [9,128,128,64,32,9], relu-relu, 0.22 *= 0.99995 15000: 0.000647
+# Current Best: [9,56,56,18,9], 0.012 15000: 0.002533 and somehow still dumb
 
 
-dawn = dawn([9,128,128,64,32,9], "relu", "relu")
-dawn.init_weights("xavier_normal")
+byte = byte([9,56,56,18,9])
 epochs = 15000
-learn_rate = 0.22
-decay = 0.99995
+learn_rate = 0.01
 checks = 100
 board = [0,0,0,0,0,0,0,0,0]
 current_player = -1
@@ -33,7 +30,7 @@ def check_win(board):
         return 0
     return None
 
-def train_dawn():
+def train_byte():
     x.clear()
     y.clear()
     seen = {}
@@ -78,11 +75,9 @@ def train_dawn():
         seen[board_tuple] = target
         return target
     generate([0,0,0,0,0,0,0,0,0], -1)
-    x_arr = np.array(x)
+    x_arr = (np.array(x) + 1) / 2
     y_arr = np.array(y)
-    x_arr = x_arr.T
-    y_arr = y_arr.T
-    dawn.teach(x_arr, y_arr, learn_rate, "backprop", epochs, checks, decay)
+    byte.train(x_arr, y_arr, epochs, learn_rate, checks)
 
 def print_board(board):
     symbols = {1:"[X]", -1:"[O]"}
@@ -101,16 +96,16 @@ def print_board(board):
 def human_move(board):
     move = -1
     while move not in range(9) or board[move] != 0:
-        move = int(input(f"[neuralnets/dawn_t3] Your Turn! (0-8): "))
+        move = int(input(f"[byte_t3-2] Your Turn! (0-8): "))
     return move
 
-def dawn_move(board):
-    output = dawn.think(np.array(board).reshape(9,1)).flatten()
+def byte_move(board):
+    output = byte.push(np.array(board).reshape(1,9))[0]
     masked = [o if board[i] == 0 else -1e9 for i, o in enumerate(output)]
     move = masked.index(max(masked))
     return move
 
-train_dawn()
+train_byte()
 
 while True:
     if current_player == 1:
@@ -119,7 +114,7 @@ while True:
         print("")
         move = human_move(board)
     else:
-        move = dawn_move(board)
+        move = byte_move(board)
     board[move] = current_player if current_player == 1 else -1
     winner = check_win(board)
     if winner is not None:
@@ -127,11 +122,11 @@ while True:
         print_board(board)
         print("")
         if winner == 1:
-            print("[neuralnets/dawn_t3] You Win! (^C To Exit Game)")
+            print("[byte_t3-2] You Win! (^C To Exit Game)")
         elif winner == -1:
-            print("[neuralnets/dawn_t3] Dawn Wins! (^C To Exit Game)")
+            print("[byte_t3-2] Byte Wins! (^C To Exit Game)")
         else:
-            print("[neuralnets/dawn_t3] Draw! (^C To Exit Game)")
+            print("[byte_t3-2] Draw! (^C To Exit Game)")
         board = [0,0,0,0,0,0,0,0,0]
         current_player = -1
     else:

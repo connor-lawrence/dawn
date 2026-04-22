@@ -44,13 +44,13 @@ for epoch in range(50000):
     weights1 += layer1.T.dot(layer2_delta) * lr
     weights0 += layer0.T.dot(layer1_delta) * lr
 
-print("[neuralnets/nntest] Predictions after training:")
+print("[nntest] Predictions after training:")
 print(layer4)
 print("")
 predicted_bits = (layer4 > 0.5).astype(int)
-print("[neuralnets/nntest] Simplified Predictions:")
+print("[nntest] Simplified Predictions:")
 print(predicted_bits)
 print("")
-print("[neuralnets/nntest] Correct Answers:")
+print("[nntest] Correct Answers:")
 print(y)
 print("")

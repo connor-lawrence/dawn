@@ -75,13 +75,13 @@ def best_moves(b):
     return [i for i in range(9) if b[i] == 0]
 
 print("")
-print("[neuralnets/node1] Beginning Board Check...")
+print("[node1] Beginning Board Check...")
 print("")
 
 all_boards = list(itertools.product([0,1,-1], repeat=9))
 valid_boards = [list(b) for b in all_boards if is_legal(list(b)) and check_win(list(b)) is None]
 
-print("[neuralnets/node1] Valid Boards: " + str(len(valid_boards)))
+print("[node1] Valid Boards: " + str(len(valid_boards)))
 print("")
 
 X = []
@@ -101,12 +101,13 @@ Y = np.array(Y)*0.8 + 0.1
 np.random.seed(1)
 weights = []
 
-print("[neuralnets/node1] Beginning training...")
+print("[node1] Beginning training...")
 print("")
 
 for i in range(len(layer_sizes) - 1):
     w = 2 * np.random.random((layer_sizes[i], layer_sizes[i + 1])) * 0.1
     weights.append(w)
+
 
 for _ in range(epochs):
     layers = [X]
@@ -120,7 +121,7 @@ for _ in range(epochs):
         weights[i] += layers[i].T.dot(deltas[i]) * learn_rate
     if _ % (epochs // 50) == 0: 
         mse = np.mean((Y - layers[-1])**2)
-        print(f"[neuralnets/node1] Epoch {_}, MSE: {mse:.6f}")
+        print(f"[node1] Epoch {_}, MSE: {mse:.6f}")
 
 def node_move(board):
     inp = np.array(board).reshape(1,-1)
@@ -138,20 +139,20 @@ current_player = 1
 while True:
     print_board(board)
     if current_player == 1:
-        move = int(input(f"[neuralnets/node1] Your turn (0-8): "))
+        move = int(input(f"[node1] Your turn (0-8): "))
         while move not in range(9) or board[move] != 0:
-            move = int(input(f"[neuralnets/node1] Your turn (0-8): "))
+            move = int(input(f"[node1] Your turn (0-8): "))
     else:
         move = node_move(board)
-        print(f"[neuralnets/node1] Node plays: {move}")
+        print(f"[node1] Node plays: {move}")
     board[move] = current_player if current_player == 1 else -1
     winner = check_win(board)
     if winner is not None:
         print_board(board)
         if winner == 1:
-            print("[neuralnets/node1] You win!")
+            print("[node1] You win!")
         elif winner == -1:
-            print("[neuralnets/node1] Node wins!")
+            print("[node1] Node wins!")
         else:
             print("Draw!")
         break
