@@ -60,69 +60,6 @@ class Dawn3:
     def relu(self, x): return np.maximum(0.01 * x, x) # ReLU
     def relu_der(self, x): return (x > 0).astype(float) + 0.01 * (x <= 0) # ReLU derivative
 
-
-class Dawn4:
-    def __init__(self, net, hidden_type, output_type): ##### Initialize Dawn3 #####
-        np.random.seed(1) # Set random seed
-        self.net_dimensions = net; self.layer_count = len(net) - 1 # Bring in network dimensions and saves number of layers
-        self.weights = []; self.biases = [] # Make lists for weights and biases
-        self.activated_layer_outputs = []; self.raw_layer_outputs = [] # Make lists for raw and activated layer outputs for training
-        self.hidden_type = hidden_type; self.output_type = output_type # Bring in activation functions for hidden and output layers
-        self.hidden_function = {"sigmoid": self.sigmoid, "tanh": self.tanh, "relu": self.relu}.get(hidden_type, self.sigmoid) # Hidden layer activation function
-        self.hidden_derivative = {"sigmoid": self.sigmoid_der, "tanh": self.tanh_der, "relu": self.relu_der}.get(hidden_type, self.sigmoid_der) # Hidden layer derivative
-        self.output_function = {"sigmoid": self.sigmoid, "tanh": self.tanh, "relu": self.relu}.get(output_type, self.sigmoid) # Output layer activation function
-        self.output_derivative = {"sigmoid": self.sigmoid_der, "tanh": self.tanh_der, "relu": self.relu_der}.get(output_type, self.sigmoid_der) # Output layer derivative
-        self.layer_outputs = {"sigmoid": self.activated_layer_outputs, "tanh": self.activated_layer_outputs, "relu": self.raw_layer_outputs}.get(output_type) # Layer outputs
-    def init_parameters(self, nu="n"): ##### Initialize Parameters #####
-        self.weights = []; self.biases = [] # Bring in lists for weights and biases
-        for i in range(self.layer_count): # For each layer:
-            nodes_in = self.net_dimensions[i]; nodes_out = self.net_dimensions[i+1] # Store the number of neurons in this and next layer (to size arrays)
-            if i < self.layer_count - 1: act = self.hidden_type # If in a hidden layer, use the hidden layer activation function refrence
-            else: act = self.output_type # If in an output layer, use the output layer activation function refrence
-            if act in ["sigmoid", "tanh"]: # If Sigmoid or TanH (Xavier):
-                if nu == "n": weight_matrix = np.random.randn(nodes_out, nodes_in) * np.sqrt(2 / (nodes_in + nodes_out)) # Xavier Normal
-                else: weight_matrix = np.random.uniform((-1 * (np.sqrt(6 / (nodes_in + nodes_out)))), np.sqrt(6 / (nodes_in + nodes_out)), (nodes_out, nodes_in)) # Xvr Unfrm
-            elif act == "relu": # If ReLU (He):
-                if nu == "n": weight_matrix = np.random.randn(nodes_out, nodes_in) * np.sqrt(2 / nodes_in) # He Normal
-                else: weight_matrix = np.random.uniform((-1 * (np.sqrt(6 / nodes_in))), np.sqrt(6 / nodes_in), (nodes_out, nodes_in)) # He Uniform
-            else: weight_matrix = np.random.randn(nodes_out, nodes_in) * 0.1 # Use small random numbers as default
-            self.weights.append(weight_matrix); self.biases.append(np.zeros((nodes_out, 1))) # Activate weights, set biases to 0
-    def think(self, inputs): ##### Forward pass #####
-        self.activated_layer_outputs = [inputs]; self.raw_layer_outputs = [inputs] # Bring in lists for raw and activated layer outputs
-        current_input = inputs # Start with the input layer
-        for i in range(self.layer_count): # For each layer:
-            current_weights = self.weights[i]; current_biases = self.biases[i] # Bring in the current layer's weights and biases
-            raw_output = np.clip(current_weights @ current_input + current_biases, 0, 10); self.raw_layer_outputs.append(raw_output) # Compute raw layer output and store
-            if i == self.layer_count - 1: layer_output = self.output_function(raw_output) # If in the output layer, compute it's activated output
-            else: layer_output = self.hidden_function(raw_output) # If in a hidden layer, compute it's activated output
-            self.activated_layer_outputs.append(layer_output) # Store the layer's activated output
-            current_input = layer_output # Bring the output from the current layer into the next
-        if self.output_type in ["sigmoid", "tanh"]: self.layer_outputs = self.activated_layer_outputs # Refresh layer outputs for sigmoid and TanH (activated)
-        elif self.output_type == "relu": self.layer_outputs = self.raw_layer_outputs # Refresh layer outputs for ReLU (raw)
-        return current_input # Return output
-    def teach(self, method, inputs, signals, lr, epochs=1, decay=1, logs=1): ##### Train Network #####
-        inputs = np.asarray(inputs); signals = np.asarray(signals); deltas = [None] * self.layer_count # Convert inputs and targets into NumPy arrays and initialize deltas
-        interval = max(1, epochs // logs) if logs != 0 else None; epoch_digits = len(str(epochs)); current_lr = lr # Set log interval and starting learn rate
-        for epoch in range(epochs): # For each epoch:
-            self.think(inputs) # Forward pass
-            if method == "bp": deltas[-1] = (self.activated_layer_outputs[-1] - signals) * self.output_derivative(self.layer_outputs[-1]) # Backprop output layer deltas
-            elif method == "rl": deltas[-1] = (signals - self.activated_layer_outputs[-1]) * self.output_derivative(self.layer_outputs[-1]) # Reinforcement output layer deltas
-            for i in reversed(range(self.layer_count - 1)): deltas[i] = (self.weights[i+1].T @ deltas[i+1]) * self.hidden_derivative(self.layer_outputs[i+1]) # Hdn lyr dltas
-            for i in range(self.layer_count): # For each layer:
-                previous_output = self.activated_layer_outputs[i] # Set the previous output correctly
-                self.weights[i] -= current_lr * (deltas[i] @ previous_output.T); self.biases[i] -= current_lr * np.mean(deltas[i], axis=1, keepdims=True) # Update wts and bs
-            current_lr *= decay # Decay learn rate
-            if logs != 0 and epoch % interval == 0: # If a log is expected:
-                mse = np.mean((self.activated_layer_outputs[-1] - signals) ** 2) # Compute MSE
-                print(f"[Dawn3] {int(100*(epoch/epochs)):02}% E:{epoch:0{epoch_digits}d} LR:{current_lr:.4f} MSE:{mse:.6f}") # Log data
-        return np.mean((self.activated_layer_outputs[-1] - signals) ** 2) # Returns MSE
-    def sigmoid(self, x): return 1 / (1 + np.exp(-1 * (np.clip(x, -500, 500)))) # Sigmoid
-    def sigmoid_der(self, y): return y * (1 - y) # Sigmoid derivative
-    def tanh(self, x): return np.tanh(x) # TanH
-    def tanh_der(self, y): return 1 - np.clip(y, -0.999, 0.999) ** 2 # TanH derivative
-    def relu(self, x): return np.maximum(0, x) # ReLU
-    def relu_der(self, x): return (x > 0).astype(float) # ReLU derivative
-
 ##########################################################################################################################################################################
 
 class Dawn2: # Broken somehow...
