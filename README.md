@@ -8,9 +8,7 @@ This repository represents something that I take a lot of pride in, both as a so
 
 She represents many of the ways I now approach programming differently, from project structure to my coding style. I self-taught Python over several weeks just to build her, utilizing the same strategy I now use wnen learning new programming languages. That's why I named her `Dawn`... she's just the beginning.
 
-And, most importantly... I’ve always struggled with staying focused on single long-term projects.
-
-`Dawn` is my first completed project.
+And, most importantly... I’ve always struggled with staying focused on single long-term projects. `Dawn` is my first completed software project.
 
 ## Models
 
